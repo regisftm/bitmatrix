@@ -7,7 +7,7 @@ This code demonstrates how to implement the BitMatrix using available commands a
 In this proof of concept, a BitMatrix composed by three bitmaps was used. This resulted in a P4 register with a width equal to 3. Thus, it is possible to segment traffic from up to three tenants, setting different bitmaps in the BitMatrix according to which tenant originated the packet. Using a P4 table, a value for each tenant was assigned, according to its source IP network: 1 to tenant A, 2 to tenant B and 4 to tenant C. Once the hash value of each packet is computed, a modulo operation is applied to the value to determine what position should be set in the BitMatrix. This is achieved by using the P4 primitive action modify\_field\_with\_hash\_based\_offset. As each position of the BitMatrix has three bits, we used another P4 primitive action named bit\_or to set the correct bit in that position of BitMatrix by performing a logical OR operation using the current value for the selected position and the tenant value.
 
 
-![image1](https://github.com/regisftm/bitmatrix/blob/master/images/bitmatrix.jpg)
+![bitmatrix](https://github.com/regisftm/bitmatrix/blob/master/images/bitmatrix.jpg)
 
 As an example, consider that the current value for a selected position is 4 (100 in binary). This indicates that a packet originated from tenant C has already set that position. Nevertheless, this has no impact for the same position in other bitmaps in the BitMatrix. If a packet from tenant A falls in the same position, the logical OR operation is applied using the current value in the BitMatrix (4 or 100 in binary) and the tenant A value (1 or 001 in binary), resulting in the new value 5 (101 in binary). 
 
@@ -15,7 +15,7 @@ A P4 register was also used to create counter arrays. The usage of counter array
 
 The topology used was composed of three hosts and four P4 switches. Each host received an IP address from a different network, emulating different tenants. The topology is presented in Figure below.
 
-![image2](https://github.com/regisftm/bitmatrix/blob/master/images/topolofy.jpg)
+![topology](https://github.com/regisftm/bitmatrix/blob/master/images/topology.jpg)
 
 The paths between tenants were arbitrarily defined as shown in Table below.
 
