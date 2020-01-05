@@ -1,0 +1,32 @@
+table_set_default send_frame _drop
+table_set_default forward _drop
+table_set_default ipv4_lpm _drop
+table_set_default count_table count_action
+table_set_default set_counter_array_0A_table set_counter_array_0A
+table_set_default set_counter_array_0B_table set_counter_array_0B
+table_set_default set_counter_array_0C_table set_counter_array_0C
+table_set_default set_counter_array_0D_table set_counter_array_0D
+table_set_default set_counter_array_1A_table set_counter_array_1A
+table_set_default set_counter_array_1B_table set_counter_array_1B
+table_set_default set_counter_array_1C_table set_counter_array_1C
+table_set_default set_counter_array_1D_table set_counter_array_1D
+table_set_default set_btmx_table set_btmx
+table_set_default set_bitmatrix_0_table set_bitmatrix_0 0
+table_set_default set_bitmatrix_1_table set_bitmatrix_1 0
+table_add set_bitmatrix_0_table set_bitmatrix_0 10.0.0.0/24 => 1
+table_add set_bitmatrix_0_table set_bitmatrix_0 10.0.1.0/24 => 2
+table_add set_bitmatrix_0_table set_bitmatrix_0 10.0.2.0/24 => 4
+table_add set_bitmatrix_0_table set_bitmatrix_0 10.0.3.0/24 => 8
+table_add set_bitmatrix_1_table set_bitmatrix_1 10.0.0.0/24 => 1
+table_add set_bitmatrix_1_table set_bitmatrix_1 10.0.1.0/24 => 2
+table_add set_bitmatrix_1_table set_bitmatrix_1 10.0.2.0/24 => 4
+table_add set_bitmatrix_1_table set_bitmatrix_1 10.0.3.0/24 => 8
+table_add ipv4_lpm set_nhop 10.0.0.10/32 => 10.0.0.10 1
+table_add ipv4_lpm set_nhop 10.0.1.10/32 => 10.0.1.10 3
+table_add ipv4_lpm set_nhop 10.0.2.10/32 => 10.0.2.10 2
+table_add forward set_dmac 10.0.0.10 => 00:04:00:00:00:00
+table_add forward set_dmac 10.0.1.10 => 00:aa:bb:00:00:09
+table_add forward set_dmac 10.0.2.10 => 00:aa:bb:00:00:07
+table_add send_frame rewrite_mac 1 => 00:aa:bb:00:00:01
+table_add send_frame rewrite_mac 2 => 00:aa:bb:00:00:06
+table_add send_frame rewrite_mac 3 => 00:aa:bb:00:00:08

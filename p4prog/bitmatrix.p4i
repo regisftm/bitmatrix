@@ -1,0 +1,578 @@
+# 1 "p4src/bitmatrix.p4"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "/usr/include/stdc-predef.h" 1 3 4
+# 1 "<command-line>" 2
+# 1 "p4src/bitmatrix.p4"
+# 16 "p4src/bitmatrix.p4"
+# 1 "p4src/includes/headers.p4" 1
+# 16 "p4src/includes/headers.p4"
+header_type eth_t {
+    fields {
+        dstAddr : 48;
+        srcAddr : 48;
+        etherType : 16;
+    }
+}
+
+header_type ipv4_t {
+    fields {
+        version : 4;
+        ihl : 4;
+        diffserv : 8;
+        totalLen : 16;
+        id : 16;
+        flags : 3;
+        fragOffset : 13;
+        ttl : 8;
+        protocol : 8;
+        hdrChecksum : 16;
+        srcAddr : 32;
+        dstAddr : 32;
+    }
+}
+
+header_type icmp_t {
+    fields {
+        typeCode : 16;
+        hdrChecksum : 16;
+    }
+}
+
+header_type tcp_t {
+    fields {
+        srcPort : 16;
+        dstPort : 16;
+        seqNo : 32;
+        ackNo : 32;
+        dataOffset : 4;
+        res : 3;
+        ecn : 3;
+        ctrl : 6;
+        window : 16;
+        checksum : 16;
+        urgentPtr : 16;
+        options_tcp : *;
+    }
+    length : ((dataOffset*4)-20)*8;
+    max_length : 60;
+}
+
+header_type udp_t {
+    fields {
+        srcPort : 16;
+        dstPort : 16;
+        length : 16;
+        checksum : 16;
+    }
+}
+
+header_type payld_t {
+    fields {
+        userdata8B : 64;
+    }
+}
+# 17 "p4src/bitmatrix.p4" 2
+# 1 "p4src/includes/parser.p4" 1
+# 16 "p4src/includes/parser.p4"
+parser start {
+    return parse_eth;
+}
+
+
+
+
+
+
+header eth_t eth;
+
+parser parse_eth {
+    extract(eth);
+    return select(latest.etherType) {
+        0x0800 : parse_ipv4;
+        default: ingress;
+    }
+}
+
+header ipv4_t ipv4;
+
+parser parse_ipv4 {
+    extract(ipv4);
+    return select(latest.protocol) {
+        1 : parse_icmp;
+        6 : parse_tcp;
+        17 : parse_udp;
+        default: ingress;
+    }
+}
+
+header icmp_t icmp;
+
+parser parse_icmp {
+    extract(icmp);
+    return parse_payld;
+}
+
+
+header tcp_t tcp;
+
+parser parse_tcp {
+    extract(tcp);
+    return parse_payld;
+}
+
+
+header udp_t udp;
+
+parser parse_udp {
+    extract(udp);
+    return parse_payld;
+}
+
+
+header payld_t payld;
+
+parser parse_payld {
+    extract(payld);
+    return ingress;
+}
+# 18 "p4src/bitmatrix.p4" 2
+
+
+
+field_list ipv4_checksum_list {
+        ipv4.version;
+        ipv4.ihl;
+        ipv4.diffserv;
+        ipv4.totalLen;
+        ipv4.id;
+        ipv4.flags;
+        ipv4.fragOffset;
+        ipv4.ttl;
+        ipv4.protocol;
+        ipv4.srcAddr;
+        ipv4.dstAddr;
+}
+
+field_list_calculation ipv4_checksum {
+    input {
+        ipv4_checksum_list;
+    }
+    algorithm : csum16;
+    output_width : 16;
+}
+
+calculated_field ipv4.hdrChecksum {
+    update ipv4_checksum if (ipv4.ihl == 5);
+}
+
+action _drop() {
+    drop();
+}
+
+header_type routing_metadata_t {
+    fields {
+        nhop_ipv4 : 32;
+        nhop_add : 48;
+    }
+}
+
+metadata routing_metadata_t routing_metadata;
+
+
+
+
+header_type custom_metadata_t {
+    fields {
+        bitmatrix_idx : 16;
+        bitmatrix_flag : 4;
+        bitmatrix_ptr : 1;
+        bitmatrix_tenant : 4;
+        bitmatrix_value : 20;
+    }
+}
+
+metadata custom_metadata_t custom_metadata;
+
+field_list hash_fields {
+    ipv4.version;
+    ipv4.ihl;
+    ipv4.totalLen;
+    ipv4.id;
+    ipv4.flags;
+    ipv4.fragOffset;
+    ipv4.protocol;
+    ipv4.srcAddr;
+    ipv4.dstAddr;
+    payld.userdata8B;
+}
+
+field_list_calculation hash {
+    input {
+        hash_fields;
+    }
+    algorithm : crc16;
+    output_width : 16;
+}
+
+
+register bitmatrix_0{
+    width : 4;
+    instance_count : 2048;
+}
+
+
+register counter_array_0A{
+    width : 20;
+    instance_count : 2048;
+}
+
+register counter_array_0B{
+    width : 20;
+    instance_count : 2048;
+}
+
+register counter_array_0C{
+    width : 20;
+    instance_count : 2048;
+}
+
+register counter_array_0D{
+    width : 20;
+    instance_count : 2048;
+}
+
+
+
+
+register bitmatrix_1{
+    width : 4;
+    instance_count : 2048;
+}
+
+
+register counter_array_1A{
+    width : 20;
+    instance_count : 2048;
+}
+
+register counter_array_1B{
+    width : 20;
+    instance_count : 2048;
+}
+
+register counter_array_1C{
+    width : 20;
+    instance_count : 2048;
+}
+
+register counter_array_1D{
+    width : 20;
+    instance_count : 2048;
+}
+
+
+
+
+register bitmatrix_pointer{
+    width : 1;
+    instance_count : 1;
+}
+
+
+
+
+counter pckt_counter {
+    type: packets_and_bytes;
+    static: count_table;
+    instance_count: 1;
+}
+
+action count_action() {
+    count(pckt_counter, 0);
+    register_read(custom_metadata.bitmatrix_ptr, bitmatrix_pointer, 0);
+}
+
+table count_table {
+    actions {
+        count_action;
+    }
+    size : 1;
+}
+
+
+counter pckt_counter_0 {
+    type: packets_and_bytes;
+    direct : set_bitmatrix_0_table;
+}
+
+counter pckt_counter_1 {
+    type: packets_and_bytes;
+    direct : set_bitmatrix_1_table;
+}
+
+
+
+
+
+
+
+action set_bitmatrix_0(tenant_flag) {
+    modify_field_with_hash_based_offset(custom_metadata.bitmatrix_idx, 0, hash, 2048 - 1);
+    register_read(custom_metadata.bitmatrix_flag, bitmatrix_0, custom_metadata.bitmatrix_idx);
+    bit_or(custom_metadata.bitmatrix_flag, custom_metadata.bitmatrix_flag, tenant_flag);
+    register_write(bitmatrix_0, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_flag);
+    modify_field(custom_metadata.bitmatrix_tenant, tenant_flag);
+
+}
+
+table set_bitmatrix_0_table {
+    reads {
+        ipv4.srcAddr : lpm;
+    }
+    actions {
+        set_bitmatrix_0;
+        _drop;
+    }
+    size: 32;
+}
+
+
+
+
+action set_bitmatrix_1(tenant_flag) {
+    modify_field_with_hash_based_offset(custom_metadata.bitmatrix_idx, 0, hash, 2048 - 1);
+    register_read(custom_metadata.bitmatrix_flag, bitmatrix_1, custom_metadata.bitmatrix_idx);
+    bit_or(custom_metadata.bitmatrix_flag, custom_metadata.bitmatrix_flag, tenant_flag);
+    register_write(bitmatrix_1, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_flag);
+    modify_field(custom_metadata.bitmatrix_tenant, tenant_flag);
+}
+
+table set_bitmatrix_1_table {
+    reads {
+        ipv4.srcAddr : lpm;
+    }
+    actions {
+        set_bitmatrix_1;
+        _drop;
+    }
+    size: 32;
+}
+
+
+
+
+action set_counter_array_0A() {
+    register_read(custom_metadata.bitmatrix_value, counter_array_0A, custom_metadata.bitmatrix_idx);
+    add_to_field(custom_metadata.bitmatrix_value, ipv4.totalLen + 20);
+    register_write(counter_array_0A, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_value);
+}
+
+table set_counter_array_0A_table {
+    actions {
+        set_counter_array_0A;
+    }
+    size : 1;
+}
+
+action set_counter_array_0B() {
+    register_read(custom_metadata.bitmatrix_value, counter_array_0B, custom_metadata.bitmatrix_idx);
+    add_to_field(custom_metadata.bitmatrix_value, ipv4.totalLen + 20);
+    register_write(counter_array_0B, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_value);
+}
+
+table set_counter_array_0B_table {
+    actions {
+        set_counter_array_0B;
+    }
+    size : 1;
+}
+
+action set_counter_array_0C() {
+    register_read(custom_metadata.bitmatrix_value, counter_array_0C, custom_metadata.bitmatrix_idx);
+    add_to_field(custom_metadata.bitmatrix_value, ipv4.totalLen + 20);
+    register_write(counter_array_0C, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_value);
+}
+
+table set_counter_array_0C_table {
+    actions {
+        set_counter_array_0C;
+    }
+    size : 1;
+}
+
+action set_counter_array_0D() {
+    register_read(custom_metadata.bitmatrix_value, counter_array_0D, custom_metadata.bitmatrix_idx);
+    add_to_field(custom_metadata.bitmatrix_value, ipv4.totalLen + 20);
+    register_write(counter_array_0D, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_value);
+}
+
+table set_counter_array_0D_table {
+    actions {
+        set_counter_array_0D;
+    }
+    size : 1;
+}
+
+
+
+
+
+action set_counter_array_1A() {
+    register_read(custom_metadata.bitmatrix_value, counter_array_1A, custom_metadata.bitmatrix_idx);
+    add_to_field(custom_metadata.bitmatrix_value, ipv4.totalLen + 20);
+    register_write(counter_array_1A, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_value);
+}
+
+table set_counter_array_1A_table {
+    actions {
+        set_counter_array_1A;
+    }
+    size : 1;
+}
+
+action set_counter_array_1B() {
+    register_read(custom_metadata.bitmatrix_value, counter_array_1B, custom_metadata.bitmatrix_idx);
+    add_to_field(custom_metadata.bitmatrix_value, ipv4.totalLen + 20);
+    register_write(counter_array_1B, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_value);
+}
+
+table set_counter_array_1B_table {
+    actions {
+        set_counter_array_1B;
+    }
+    size : 1;
+}
+
+action set_counter_array_1C() {
+    register_read(custom_metadata.bitmatrix_value, counter_array_1C, custom_metadata.bitmatrix_idx);
+    add_to_field(custom_metadata.bitmatrix_value, ipv4.totalLen + 20);
+    register_write(counter_array_1C, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_value);
+}
+
+table set_counter_array_1C_table {
+    actions {
+        set_counter_array_1C;
+    }
+    size : 1;
+}
+
+action set_counter_array_1D() {
+    register_read(custom_metadata.bitmatrix_value, counter_array_1D, custom_metadata.bitmatrix_idx);
+    add_to_field(custom_metadata.bitmatrix_value, ipv4.totalLen + 20);
+    register_write(counter_array_1D, custom_metadata.bitmatrix_idx, custom_metadata.bitmatrix_value);
+}
+
+table set_counter_array_1D_table {
+    actions {
+        set_counter_array_1D;
+    }
+    size : 1;
+}
+
+
+
+
+
+action set_nhop(nhop_ipv4, port) {
+    modify_field(routing_metadata.nhop_ipv4, nhop_ipv4);
+    modify_field(standard_metadata.egress_spec, port);
+    modify_field(ipv4.ttl, ipv4.ttl - 1);
+}
+
+table ipv4_lpm {
+    reads {
+        ipv4.dstAddr : lpm;
+    }
+    actions {
+        set_nhop;
+        _drop;
+    }
+    size: 1024;
+}
+
+
+
+action set_dmac(dmac) {
+    modify_field(eth.dstAddr, dmac);
+}
+
+table forward {
+    reads {
+        routing_metadata.nhop_ipv4 : exact;
+    }
+    actions {
+        set_dmac;
+        _drop;
+    }
+    size: 512;
+}
+
+
+
+action rewrite_mac(smac) {
+    modify_field(eth.srcAddr, smac);
+}
+
+table send_frame {
+    reads {
+        standard_metadata.egress_port: exact;
+    }
+    actions {
+        rewrite_mac;
+        _drop;
+    }
+    size: 256;
+}
+
+
+
+control ingress {
+    if(valid(ipv4) and ipv4.ttl > 0) {
+        apply(count_table);
+        if (custom_metadata.bitmatrix_ptr == 0) {
+            apply(set_bitmatrix_0_table);
+            if (custom_metadata.bitmatrix_tenant == 1) {
+                apply(set_counter_array_0A_table);
+            }
+            else {
+                if (custom_metadata.bitmatrix_tenant == 2) {
+                apply(set_counter_array_0B_table);
+                }
+                else {
+                    if (custom_metadata.bitmatrix_tenant == 4) {
+                    apply(set_counter_array_0C_table);
+                    }
+                    else {
+                    apply(set_counter_array_0D_table);
+                    }
+                }
+            }
+        }
+        if (custom_metadata.bitmatrix_ptr == 1) {
+            apply(set_bitmatrix_1_table);
+            if (custom_metadata.bitmatrix_tenant == 1) {
+                apply(set_counter_array_1A_table);
+            }
+            else {
+                if (custom_metadata.bitmatrix_tenant == 2) {
+                apply(set_counter_array_1B_table);
+                }
+                else {
+                    if (custom_metadata.bitmatrix_tenant == 4) {
+                    apply(set_counter_array_1C_table);
+                    }
+                    else {
+                    apply(set_counter_array_1D_table);
+                    }
+                }
+            }
+        }
+        apply(ipv4_lpm);
+        apply(forward);
+    }
+}
+
+control egress {
+    apply(send_frame);
+}

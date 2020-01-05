@@ -1,0 +1,39 @@
+A
+÷¦€count_tablecount_table‚‚·¶@defaultonly()@e
+„‚forwardforward"routing_metadata.nhop_ipv4  (˜€¸¶€·¶@defaultonly()@€Y
+¡×ipv4_lpmipv4_lpmipv4.dstAddr  (¬‘‚¸¶€·¶@defaultonly()@€y
+3öÙ€set_bitmatrix_0_tableset_bitmatrix_0_tableipv4.srcAddr  (‡‚¸¶€·¶@defaultonly():ğâ@ y
+3‘ş‚set_bitmatrix_1_tableset_bitmatrix_1_tableipv4.srcAddr  (ÛÉƒ¸¶€·¶@defaultonly():Õ­€@ _
+=×‚‚set_counter_array_0A_tableset_counter_array_0A_tableŠ±€·¶@defaultonly()@_
+=œıset_counter_array_0B_tableset_counter_array_0B_tableîÊ·¶@defaultonly()@_
+=œ§€set_counter_array_0C_tableset_counter_array_0C_table¡§·¶@defaultonly()@_
+=È‘‚set_counter_array_0D_tableset_counter_array_0D_table“ø‚·¶@defaultonly()@_
+=¢Õƒset_counter_array_1A_tableset_counter_array_1A_table•²ƒ·¶@defaultonly()@_
+=¸‚set_counter_array_1B_tableset_counter_array_1B_table¨ù·¶@defaultonly()@_
+=õ¦ƒset_counter_array_1C_tableset_counter_array_1C_table¾ ‚·¶@defaultonly()@_
+=è¸set_counter_array_1D_tableset_counter_array_1D_tableÇ®€·¶@defaultonly()@n
+ÊÁ€
+send_frame
+send_frame%standard_metadata.egress_port 	(Ø—‚¸¶€·¶@defaultonly()@€
+·¶NoActionNoAction#
+!‚‚count_actioncount_action'
+˜€set_dmacset_dmac
+dmac 0
+¸¶€_drop_drop8
+¬‘‚set_nhopset_nhop	nhop_ipv4  
+port 	3
+1Š±€set_counter_array_0Aset_counter_array_0A3
+1îÊset_counter_array_0Bset_counter_array_0B3
+1¡§set_counter_array_0Cset_counter_array_0C3
+1“ø‚set_counter_array_0Dset_counter_array_0D3
+1•²ƒset_counter_array_1Aset_counter_array_1A3
+1¨ùset_counter_array_1Bset_counter_array_1B3
+1¾ ‚set_counter_array_1Cset_counter_array_1C3
+1Ç®€set_counter_array_1Dset_counter_array_1D<
+'‡‚set_bitmatrix_0set_bitmatrix_0tenant_flag <
+'ÛÉƒset_bitmatrix_1set_bitmatrix_1tenant_flag -
+Ø—‚rewrite_macrewrite_mac
+smac 0**
+"Æ¶€pckt_counterpckt_counter21
+&ğâpckt_counter_0pckt_counter_0öÙ€21
+&Õ­€pckt_counter_1pckt_counter_1‘ş‚
